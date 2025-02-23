@@ -12,6 +12,9 @@ import java.util.List;
 
 @Getter
 public abstract class AbstractCommand<P extends SEngine<P>> {
+    @Setter
+    private P plugin;
+
     private final String name;
     private final String permission;
     private final String description;

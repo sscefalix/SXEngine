@@ -20,6 +20,7 @@ public class CommandManager<P extends SEngine<P>> extends AbstractManager<P> {
     }
 
     public void addCommand(AbstractMainCommand<P> command) {
+        command.setPlugin(getPlugin());
         commands.add(command);
 
         PluginCommand pluginCommand = getPlugin().getCommand(command.getName());

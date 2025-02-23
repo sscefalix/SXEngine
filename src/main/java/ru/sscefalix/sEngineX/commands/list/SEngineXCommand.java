@@ -11,8 +11,12 @@ import java.util.List;
 public class SEngineXCommand<P extends SEngine<P>> extends AbstractMainCommand<P> {
     public SEngineXCommand() {
         super("senginex", "senginex.commands.default", "Главная команда SEngineX.", new ArrayList<>());
+        setPlugin(getPlugin());
 
-        addSubCommand(new SEngineXSubCommand<>(this));
+        SEngineXSubCommand<P> subCommand = new SEngineXSubCommand<>(this);
+        subCommand.setPlugin(getPlugin());
+
+        addSubCommand(subCommand);
     }
 
     @Override
