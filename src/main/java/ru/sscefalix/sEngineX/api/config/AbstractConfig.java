@@ -30,6 +30,7 @@ public abstract class AbstractConfig<P extends SEngine<P>> {
     private void loadConfig() {
         configFile = new File(plugin.getDataFolder(), fileName);
         if (!configFile.exists()) {
+            plugin.getDataFolder().mkdirs();
             plugin.saveResource(fileName, false);
         }
         config = YamlConfiguration.loadConfiguration(configFile);
