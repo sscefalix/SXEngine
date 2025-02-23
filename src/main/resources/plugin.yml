@@ -1,0 +1,6 @@
+name: SEngineX
+version: '1.0-SNAPSHOT'
+main: ru.sscefalix.sEngineX.SEngineX
+api-version: '1.21'
+authors: [ sscefalix ]
+website: sscefalix.ru
