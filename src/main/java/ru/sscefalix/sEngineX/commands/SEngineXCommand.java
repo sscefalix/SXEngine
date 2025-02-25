@@ -1,4 +1,4 @@
-package ru.sscefalix.sEngineX.commands.list;
+package ru.sscefalix.sEngineX.commands;
 
 import org.bukkit.command.CommandSender;
 import ru.sscefalix.sEngineX.SEngine;
@@ -9,14 +9,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class SEngineXCommand<P extends SEngine<P>> extends AbstractMainCommand<P> {
-    public SEngineXCommand() {
-        super("senginex", "senginex.commands.default", "Главная команда SEngineX.", new ArrayList<>());
-        setPlugin(getPlugin());
+    public SEngineXCommand(P plugin) {
+        super("senginex", "Главная команда SEngineX.", new ArrayList<>());
+        setPlugin(plugin);
 
-        SEngineXSubCommand<P> subCommand = new SEngineXSubCommand<>(this);
-        subCommand.setPlugin(getPlugin());
-
-        addSubCommand(subCommand);
+        addSubCommand(new SEngineXAboutCommand<>(plugin));
     }
 
     @Override

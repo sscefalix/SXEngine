@@ -1,15 +1,23 @@
 package ru.sscefalix.sEngineX;
 
+import lombok.Getter;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitScheduler;
 import org.bukkit.scheduler.BukkitTask;
 import org.jetbrains.annotations.NotNull;
-import ru.sscefalix.sEngineX.commands.CommandManager;
+import ru.sscefalix.sEngineX.api.command.CommandManager;
+import ru.sscefalix.sEngineX.api.database.DatabaseManager;
+import ru.sscefalix.sEngineX.api.listener.ListenerManager;
+import ru.sscefalix.sEngineX.api.permission.PermissionManager;
 
 import java.util.function.Consumer;
 
+@Getter
 public abstract class SEngine<P extends SEngine<P>> extends JavaPlugin {
     protected CommandManager<P> commandManager;
+    protected PermissionManager<P> permissionManager;
+    protected DatabaseManager<P> databaseManager;
+    protected ListenerManager<P> listenerManager;
 
     @Override
     public void onEnable() {
@@ -30,13 +38,33 @@ public abstract class SEngine<P extends SEngine<P>> extends JavaPlugin {
     protected abstract void disable();
 
     private void loadManagers() {
-        this.commandManager = new CommandManager<>(self());
-        this.commandManager.setup();
+        commandManager = new CommandManager<>(self());
+        commandManager.setup();
+
+        permissionManager = new PermissionManager<>(self());
+        permissionManager.setup();
+
+        databaseManager = new DatabaseManager<>(self());
+
+        listenerManager = new ListenerManager<>(self());
+        listenerManager.setup();
     }
 
     private void unloadManagers() {
-        if (this.commandManager != null) {
-            this.commandManager.shutdown();
+        if (commandManager != null) {
+            commandManager.shutdown();
+        }
+
+        if (permissionManager != null) {
+            permissionManager.shutdown();
+        }
+
+        if (databaseManager != null) {
+            databaseManager.shutdown();
+        }
+
+        if (listenerManager != null) {
+            listenerManager.shutdown();
         }
     }
 

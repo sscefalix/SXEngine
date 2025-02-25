@@ -1,7 +1,8 @@
-package ru.sscefalix.sEngineX.api.managers;
+package ru.sscefalix.sEngineX.api.manager;
 
 import lombok.Getter;
 import ru.sscefalix.sEngineX.SEngine;
+import ru.sscefalix.sEngineX.api.listener.EventListener;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -35,5 +36,6 @@ public abstract class AbstractManager<P extends SEngine<P>> {
     }
 
     protected abstract void onSetup();
+
     protected abstract void onShutdown();
 }

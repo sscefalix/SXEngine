@@ -1,10 +1,9 @@
-package ru.sscefalix.sEngineX.commands;
+package ru.sscefalix.sEngineX.api.command;
 
 import lombok.Getter;
 import org.bukkit.command.PluginCommand;
 import ru.sscefalix.sEngineX.SEngine;
-import ru.sscefalix.sEngineX.api.command.AbstractMainCommand;
-import ru.sscefalix.sEngineX.api.managers.AbstractManager;
+import ru.sscefalix.sEngineX.api.manager.AbstractManager;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -20,7 +19,6 @@ public class CommandManager<P extends SEngine<P>> extends AbstractManager<P> {
     }
 
     public void addCommand(AbstractMainCommand<P> command) {
-        command.setPlugin(getPlugin());
         commands.add(command);
 
         PluginCommand pluginCommand = getPlugin().getCommand(command.getName());
@@ -38,6 +36,15 @@ public class CommandManager<P extends SEngine<P>> extends AbstractManager<P> {
 
     @Override
     protected void onShutdown() {
+        for (AbstractMainCommand<P> command : commands) {
+            PluginCommand pluginCommand = getPlugin().getCommand(command.getName());
 
+            if (pluginCommand != null) {
+                pluginCommand.setExecutor(null);
+                pluginCommand.setTabCompleter(null);
+            }
+
+            commands.remove(command);
+        }
     }
 }

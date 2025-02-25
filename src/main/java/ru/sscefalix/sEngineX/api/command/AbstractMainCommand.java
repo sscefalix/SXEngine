@@ -19,13 +19,14 @@ import java.util.List;
 public abstract class AbstractMainCommand<P extends SEngine<P>> extends AbstractCommand<P> implements CommandExecutor, TabCompleter {
     private final List<AbstractSubCommand<P>> subCommands;
 
-    public AbstractMainCommand(String command, String permission, String description, List<CommandArgument> arguments) {
-        super(command, permission, description, arguments);
+    public AbstractMainCommand(String command, String description, List<CommandArgument> arguments) {
+        super(command, description, arguments);
 
         this.subCommands = new ArrayList<>();
     }
 
     public void addSubCommand(AbstractSubCommand<P> subCommand) {
+        subCommand.setParent(this);
         subCommands.add(subCommand);
     }
 

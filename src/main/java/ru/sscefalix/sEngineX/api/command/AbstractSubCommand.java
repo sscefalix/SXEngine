@@ -12,7 +12,7 @@ import java.util.List;
 public abstract class AbstractSubCommand<P extends SEngine<P>> extends AbstractCommand<P> {
     private AbstractMainCommand<P> parent;
 
-    public AbstractSubCommand(String command, String permission, String description, List<CommandArgument> arguments) {
-        super(command, permission, description, arguments);
+    public AbstractSubCommand(String command, String description, List<CommandArgument> arguments) {
+        super(command, description, arguments);
     }
 }

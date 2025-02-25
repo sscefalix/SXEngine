@@ -16,18 +16,20 @@ public abstract class AbstractCommand<P extends SEngine<P>> {
     private P plugin;
 
     private final String name;
-    private final String permission;
     private final String description;
     private final List<CommandArgument> arguments;
 
     @Setter
     private boolean onlyPlayers;
 
-    public AbstractCommand(String name, String permission, String description, List<CommandArgument> arguments) {
+    public AbstractCommand(String name, String description, List<CommandArgument> arguments) {
         this.name = name;
-        this.permission = permission;
         this.description = description;
         this.arguments = arguments;
+    }
+
+    public String getPermission() {
+        return getPlugin().getPermissionManager().commandPermission(this);
     }
 
     protected void sendPermissionMessage(CommandSender sender) {
