@@ -27,7 +27,7 @@ public class DatabaseManager<P extends SEngine<P>> extends AbstractManager<P> {
         return dataSource.getConnection();
     }
 
-    public <T extends AbstractTable> long insert(T entity) throws SQLException {
+    public <T extends AbstractTable<P>> long insert(T entity) throws SQLException {
         Class<?> clazz = entity.getClass();
         Field[] fields = clazz.getDeclaredFields();
 
@@ -73,7 +73,7 @@ public class DatabaseManager<P extends SEngine<P>> extends AbstractManager<P> {
         }
     }
 
-    public <T extends AbstractTable> T getById(Class<T> clazz, long id) throws SQLException {
+    public <T extends AbstractTable<P>> T getById(Class<T> clazz, long id) throws SQLException {
         try (Connection conn = getConnection();
              PreparedStatement stmt = conn.prepareStatement(
                      "SELECT * FROM %s WHERE id = ?".formatted(getTableName(clazz)))) {
@@ -87,7 +87,7 @@ public class DatabaseManager<P extends SEngine<P>> extends AbstractManager<P> {
         }
     }
 
-    public <T extends AbstractTable> List<T> getByField(Class<T> clazz, String field, Object value)
+    public <T extends AbstractTable<P>> List<T> getByField(Class<T> clazz, String field, Object value)
             throws SQLException {
         try (Connection conn = getConnection();
              PreparedStatement stmt = conn.prepareStatement(
@@ -119,7 +119,7 @@ public class DatabaseManager<P extends SEngine<P>> extends AbstractManager<P> {
         }
     }
 
-    public <T extends AbstractTable> void createTableIfNotExists(Class<T> clazz) throws SQLException {
+    public <T extends AbstractTable<P>> void createTableIfNotExists(Class<T> clazz) throws SQLException {
         StringBuilder sql = new StringBuilder("CREATE TABLE IF NOT EXISTS ");
         sql.append(getTableName(clazz)).append(" (");
 
@@ -145,7 +145,6 @@ public class DatabaseManager<P extends SEngine<P>> extends AbstractManager<P> {
                 }
                 if (!column.defaultValue().isEmpty()) {
                     String defaultVal = column.defaultValue();
-                    // Для строковых значений добавляем кавычки
                     if (field.getType() == String.class) {
                         defaultVal = "'" + defaultVal + "'";
                     }
@@ -168,7 +167,7 @@ public class DatabaseManager<P extends SEngine<P>> extends AbstractManager<P> {
         }
     }
 
-    private <T extends AbstractTable> T mapResultSetToObject(ResultSet rs, Class<T> clazz)
+    private <T extends AbstractTable<P>> T mapResultSetToObject(ResultSet rs, Class<T> clazz)
             throws SQLException {
         try {
             T instance = clazz.getDeclaredConstructor().newInstance();
@@ -180,6 +179,12 @@ public class DatabaseManager<P extends SEngine<P>> extends AbstractManager<P> {
                 if (column != null) {
                     Object value = rs.getObject(column.name());
                     if (value != null) {
+                        // Конвертация для временных типов
+                        if (value instanceof Timestamp && field.getType() == java.time.LocalDateTime.class) {
+                            value = ((Timestamp) value).toLocalDateTime();
+                        } else if (value instanceof Date && field.getType() == java.time.LocalDate.class) {
+                            value = ((Date) value).toLocalDate();
+                        }
                         field.set(instance, value);
                     }
                 }
@@ -190,7 +195,7 @@ public class DatabaseManager<P extends SEngine<P>> extends AbstractManager<P> {
         }
     }
 
-    private <T extends AbstractTable> String getTableName(Class<T> clazz) {
+    private <T extends AbstractTable<P>> String getTableName(Class<T> clazz) {
         try {
             return clazz.getDeclaredConstructor().newInstance().getTableName();
         } catch (Exception e) {
@@ -205,6 +210,13 @@ public class DatabaseManager<P extends SEngine<P>> extends AbstractManager<P> {
             return "VARCHAR(255)";
         } else if (type == Integer.class || type == int.class) {
             return "INT";
+        } else if (type == java.util.Date.class
+                || type == java.sql.Timestamp.class
+                || type == java.time.LocalDateTime.class) {
+            return "TIMESTAMP";
+        } else if (type == java.sql.Date.class
+                || type == java.time.LocalDate.class) {
+            return "DATE";
         }
         return "TEXT";
     }
