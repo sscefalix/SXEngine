@@ -32,7 +32,7 @@ public class PermissionManager<P extends SEngine<P>> extends AbstractManager<P> 
 
     public void registerPermission(String permission) {
         if (!registeredPermissions.contains(permission)) {
-            getPlugin().getServer().getPluginManager().addPermission(new Permission(permission));
+            getPlugin().getPluginManager().addPermission(new Permission(permission));
             registeredPermissions.add(permission);
         }
     }

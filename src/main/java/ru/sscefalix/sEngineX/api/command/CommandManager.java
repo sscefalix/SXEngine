@@ -1,7 +1,7 @@
 package ru.sscefalix.sEngineX.api.command;
 
 import lombok.Getter;
-import org.bukkit.command.PluginCommand;
+import org.bukkit.command.Command;
 import ru.sscefalix.sEngineX.SEngine;
 import ru.sscefalix.sEngineX.api.manager.AbstractManager;
 
@@ -19,14 +19,28 @@ public class CommandManager<P extends SEngine<P>> extends AbstractManager<P> {
     }
 
     public void addCommand(AbstractMainCommand<P> command) {
-        commands.add(command);
+//        commands.add(command);
 
-        PluginCommand pluginCommand = getPlugin().getCommand(command.getName());
+        try {
+            Command customCommand = new ServerCommand<>(command);
 
-        if (pluginCommand != null) {
-            pluginCommand.setExecutor(command);
-            pluginCommand.setTabCompleter(command);
+            getPlugin().getServer().getCommandMap().register(getPlugin().getPluginMeta().getName(), customCommand);
+
+            commands.add(command);
+
+            getPlugin().getLogger().info("Команда '/" + command.getName() + "' успешно зарегистрирована!");
+        } catch (Exception e) {
+            getPlugin().getLogger().severe("Ошибка при регистрации команды '/" + command.getName() + "': " + e.getMessage());
         }
+
+//        PluginCommand pluginCommand = getPlugin().getCommand(command.getName());
+//
+//        if (pluginCommand != null) {
+//            pluginCommand.register(getPlugin().getServer().getCommandMap());
+//
+//            pluginCommand.setExecutor(command);
+//            pluginCommand.setTabCompleter(command);
+//        }
     }
 
     @Override
@@ -36,15 +50,6 @@ public class CommandManager<P extends SEngine<P>> extends AbstractManager<P> {
 
     @Override
     protected void onShutdown() {
-        for (AbstractMainCommand<P> command : commands) {
-            PluginCommand pluginCommand = getPlugin().getCommand(command.getName());
 
-            if (pluginCommand != null) {
-                pluginCommand.setExecutor(null);
-                pluginCommand.setTabCompleter(null);
-            }
-
-            commands.remove(command);
-        }
     }
 }

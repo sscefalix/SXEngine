@@ -15,6 +15,6 @@ public class AbstractListener<P extends SEngine<P>> implements EventListener {
 
     @Override
     public void register() {
-        getPlugin().getServer().getPluginManager().registerEvents(this, getPlugin());
+        getPlugin().getPluginManager().registerEvents(this, getPlugin());
     }
 }

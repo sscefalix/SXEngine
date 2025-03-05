@@ -49,10 +49,18 @@ public abstract class AbstractCommand<P extends SEngine<P>> {
                 builder.append("\n").append("&0  ").append(arg.isRequired() ? "&a<" : "&e[").append(arg.getName()).append(arg.isRequired() ? ">" : "]").append(" &7— ").append("&f").append(argumentTypeToString(arg));
             }
         } else if (this instanceof AbstractMainCommand<P> mainCommand) {
-            builder.append("&0 &e∙ &fПомощь по использованию команды &e/").append(mainCommand.getName()).append("\n\n");
+            builder.append("&0 &e∙ &fПомощь по использованию команды &e/").append(mainCommand.getName()).append("\n");
 
-            for (AbstractSubCommand<P> subCommand : mainCommand.getSubCommands()) {
-                builder.append("\n").append("&0  &7▸ &e/").append(mainCommand.getName()).append(" ").append(subCommand.getName()).append(" &7— &f").append(subCommand.getDescription());
+            if (mainCommand.getSubCommands().isEmpty()) {
+                builder.append("\n").append("&0  &7▸ &fАргументы &a<обязательные> &e[не обязательные] &7: ");
+
+                for (CommandArgument arg : mainCommand.getArguments()) {
+                    builder.append("\n").append("&0  ").append(arg.isRequired() ? "&a<" : "&e[").append(arg.getName()).append(arg.isRequired() ? ">" : "]").append(" &7— ").append("&f").append(argumentTypeToString(arg));
+                }
+            } else {
+                for (AbstractSubCommand<P> subCommand : mainCommand.getSubCommands()) {
+                    builder.append("\n").append("&0  &7▸ &e/").append(mainCommand.getName()).append(" ").append(subCommand.getName()).append(" &7— &f").append(subCommand.getDescription());
+                }
             }
         }
 
@@ -71,16 +79,24 @@ public abstract class AbstractCommand<P extends SEngine<P>> {
         for (int i = 0; i < getArguments().size(); ++i) {
             CommandArgument argument = getArguments().get(i);
 
+            boolean isLastArgument = i == getArguments().size() - 1;
+            boolean isListType = argument.getType() == List.class;
+
             if (i >= args.size() && argument.isRequired()) {
-                throw new IllegalArgumentException("Аргумент " + argument.getName() + " является необходимм.");
+                throw new IllegalArgumentException("Аргумент " + argument.getName() + " является необходимым.");
             }
 
             if (i < args.size()) {
-                String arg = args.get(i);
-                if (!isValidType(arg, argument.getType())) {
-                    throw new IllegalArgumentException("Неверный тип для аргумента " + argument.getName());
+                if (isLastArgument && isListType) {
+                    List<String> remainingArgs = args.subList(i, args.size());
+                    argument.setValue(new ArrayList<>(remainingArgs));
+                } else {
+                    String arg = args.get(i);
+                    if (!isValidType(arg, argument.getType())) {
+                        throw new IllegalArgumentException("Неверный тип для аргумента " + argument.getName());
+                    }
+                    argument.setValue(parseArgument(arg, argument));
                 }
-                argument.setValue(parseArgument(arg, argument));
             }
 
             parsedArguments.add(argument);
@@ -123,14 +139,14 @@ public abstract class AbstractCommand<P extends SEngine<P>> {
         }
     }
 
-    private String argumentTypeToString(CommandArgument argument) {
+    protected String argumentTypeToString(CommandArgument argument) {
         if (argument.getType() == Integer.class) {
             return "число";
         } else if (argument.getType() == Double.class) {
             return "число с точкой";
         } else if (argument.getType() == Boolean.class) {
             return "true/false";
-        } else if (argument.getType() == String.class) {
+        } else if (argument.getType() == String.class || argument.getType() == List.class) {
             return "строка";
         } else if (argument.getType() == Player.class) {
             return "игрок";

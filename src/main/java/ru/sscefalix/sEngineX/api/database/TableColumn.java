@@ -18,5 +18,7 @@ public @interface TableColumn {
 
     boolean index() default false;
 
+    boolean unique() default false;
+
     String defaultValue() default "";
 }

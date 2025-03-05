@@ -2,11 +2,14 @@ package ru.sscefalix.sEngineX.api.database;
 
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
+import org.jspecify.annotations.Nullable;
 import ru.sscefalix.sEngineX.SEngine;
 import ru.sscefalix.sEngineX.api.manager.AbstractManager;
 
 import java.lang.reflect.Field;
 import java.sql.*;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -27,25 +30,30 @@ public class DatabaseManager<P extends SEngine<P>> extends AbstractManager<P> {
         return dataSource.getConnection();
     }
 
-    public <T extends AbstractTable<P>> long insert(T entity) throws SQLException {
+    public <T extends AbstractTable<P>> T insert(T entity) throws SQLException {
         Class<?> clazz = entity.getClass();
         Field[] fields = clazz.getDeclaredFields();
 
         List<String> columns = new ArrayList<>();
         List<Object> values = new ArrayList<>();
+        Field autoIncrementField = null;
 
         for (Field field : fields) {
             TableColumn column = field.getAnnotation(TableColumn.class);
-            if (column != null && !column.autoIncrement()) {
+            if (column != null) {
                 field.setAccessible(true);
-                try {
-                    Object value = field.get(entity);
-                    if (value != null) {
-                        columns.add(column.name());
-                        values.add(value);
+                if (column.autoIncrement()) {
+                    autoIncrementField = field;
+                } else {
+                    try {
+                        Object value = field.get(entity);
+                        if (value != null) {
+                            columns.add(column.name());
+                            values.add(value);
+                        }
+                    } catch (IllegalAccessException e) {
+                        throw new SQLException("Failed to access field value", e);
                     }
-                } catch (IllegalAccessException e) {
-                    throw new SQLException("Failed to access field value", e);
                 }
             }
         }
@@ -66,10 +74,17 @@ public class DatabaseManager<P extends SEngine<P>> extends AbstractManager<P> {
             stmt.executeUpdate();
             ResultSet generatedKeys = stmt.getGeneratedKeys();
 
-            if (generatedKeys.next()) {
-                return generatedKeys.getLong(1);
+            if (generatedKeys.next() && autoIncrementField != null) {
+                long generatedId = generatedKeys.getLong(1);
+                try {
+                    autoIncrementField.setAccessible(true);
+                    autoIncrementField.set(entity, generatedId);
+                } catch (IllegalAccessException e) {
+                    throw new SQLException("Failed to set generated ID", e);
+                }
             }
-            return -1;
+
+            return entity;
         }
     }
 
@@ -101,6 +116,12 @@ public class DatabaseManager<P extends SEngine<P>> extends AbstractManager<P> {
             }
             return results;
         }
+    }
+
+    public <T extends AbstractTable<P>> @Nullable T getOneByField(Class<T> clazz, String field, Object value) throws SQLException {
+        List<T> list = getByField(clazz, field, value);
+
+        return list.isEmpty() ? null : list.getFirst();
     }
 
     public ResultSet executeSql(String sql, Object... params) throws SQLException {
@@ -143,6 +164,9 @@ public class DatabaseManager<P extends SEngine<P>> extends AbstractManager<P> {
                 if (!column.nullable()) {
                     columnDef.append(" NOT NULL");
                 }
+                if (column.unique()) {
+                    columnDef.append(" UNIQUE");
+                }
                 if (!column.defaultValue().isEmpty()) {
                     String defaultVal = column.defaultValue();
                     if (field.getType() == String.class) {
@@ -167,7 +191,7 @@ public class DatabaseManager<P extends SEngine<P>> extends AbstractManager<P> {
         }
     }
 
-    private <T extends AbstractTable<P>> T mapResultSetToObject(ResultSet rs, Class<T> clazz)
+    public <T extends AbstractTable<P>> T mapResultSetToObject(ResultSet rs, Class<T> clazz)
             throws SQLException {
         try {
             T instance = clazz.getDeclaredConstructor().newInstance();
@@ -179,10 +203,9 @@ public class DatabaseManager<P extends SEngine<P>> extends AbstractManager<P> {
                 if (column != null) {
                     Object value = rs.getObject(column.name());
                     if (value != null) {
-                        // Конвертация для временных типов
-                        if (value instanceof Timestamp && field.getType() == java.time.LocalDateTime.class) {
+                        if (value instanceof Timestamp && field.getType() == LocalDateTime.class) {
                             value = ((Timestamp) value).toLocalDateTime();
-                        } else if (value instanceof Date && field.getType() == java.time.LocalDate.class) {
+                        } else if (value instanceof Date && field.getType() == LocalDate.class) {
                             value = ((Date) value).toLocalDate();
                         }
                         field.set(instance, value);
@@ -191,7 +214,7 @@ public class DatabaseManager<P extends SEngine<P>> extends AbstractManager<P> {
             }
             return instance;
         } catch (Exception e) {
-            throw new SQLException("Failed to map ResultSet to object", e);
+            throw new SQLException("Failed to map ResultSet to object: " + e.getMessage());
         }
     }
 
@@ -210,13 +233,10 @@ public class DatabaseManager<P extends SEngine<P>> extends AbstractManager<P> {
             return "VARCHAR(255)";
         } else if (type == Integer.class || type == int.class) {
             return "INT";
-        } else if (type == java.util.Date.class
-                || type == java.sql.Timestamp.class
-                || type == java.time.LocalDateTime.class) {
+        } else if (type == Date.class
+                || type == Timestamp.class
+                || type == LocalDateTime.class) {
             return "TIMESTAMP";
-        } else if (type == java.sql.Date.class
-                || type == java.time.LocalDate.class) {
-            return "DATE";
         }
         return "TEXT";
     }

@@ -18,16 +18,22 @@ import java.util.List;
 @Getter
 public abstract class AbstractMainCommand<P extends SEngine<P>> extends AbstractCommand<P> implements CommandExecutor, TabCompleter {
     private final List<AbstractSubCommand<P>> subCommands;
+    private final List<String> aliases;
 
     public AbstractMainCommand(String command, String description, List<CommandArgument> arguments) {
         super(command, description, arguments);
 
         this.subCommands = new ArrayList<>();
+        this.aliases = new ArrayList<>();
     }
 
     public void addSubCommand(AbstractSubCommand<P> subCommand) {
         subCommand.setParent(this);
         subCommands.add(subCommand);
+    }
+
+    public void addAlias(String alias) {
+        aliases.add(alias);
     }
 
     protected boolean executeCommand(AbstractCommand<P> command, CommandSender sender, List<String> args) {
@@ -53,31 +59,37 @@ public abstract class AbstractMainCommand<P extends SEngine<P>> extends Abstract
             List<CommandArgument> arguments = command.validateAndParseArguments(argsToProcess);
 
             command.onExecute(sender, arguments);
-        } catch (Exception ignored) {
+        } catch (Exception e) {
+            sender.sendMessage(ColorUtils.colorize("&c" + e.getMessage()));
             command.sendUsageMessage(sender);
         }
 
         return true;
     }
 
+    private AbstractSubCommand<P> findSubCommand(String name) {
+        for (AbstractSubCommand<P> subCommand : subCommands) {
+            if (subCommand.getName().equalsIgnoreCase(name)) {
+                return subCommand;
+            }
+        }
+
+        return null;
+    }
+
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command cmd, @NotNull String label, @NotNull String @NotNull [] args) {
         String subCommandName = args.length > 0 ? args[0] : null;
-        AbstractCommand<P> command = null;
+        AbstractCommand<P> command;
 
         if (subCommandName == null) {
             command = this;
         } else {
-            for (AbstractSubCommand<P> subCommand : subCommands) {
-                if (subCommand.getName().equalsIgnoreCase(subCommandName)) {
-                    command = subCommand;
-                    break;
-                }
-            }
+            command = findSubCommand(subCommandName);
         }
 
         if (command == null) {
-            return true;
+            command = this;
         }
 
         return executeCommand(command, sender, Arrays.asList(args));
@@ -113,8 +125,45 @@ public abstract class AbstractMainCommand<P extends SEngine<P>> extends Abstract
     public @Nullable List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command cmd, @NotNull String label, @NotNull String @NotNull [] args) {
         List<String> tabs = new ArrayList<>();
 
-        if (args.length == 1) {
-            tabs.addAll(filterAndSort(subCommands.stream().filter(command -> sender.hasPermission(command.getPermission())).map(AbstractSubCommand::getName).toList(), label));
+        if (subCommands.isEmpty()) {
+            int index = args.length - 1;
+
+            CommandArgument argument = getArguments().get(index);
+
+            tabs.addAll(getArgumentTabs(argument));
+        } else {
+            if (args.length == 1) {
+                tabs.addAll(filterAndSort(subCommands.stream().filter(command -> sender.hasPermission(command.getPermission())).map(AbstractSubCommand::getName).toList(), label));
+            } else if (args.length > 1) {
+                int index = args.length - 2;
+
+                AbstractSubCommand<P> subCommand = findSubCommand(args[0]);
+
+                if (subCommand == null) {
+                    return tabs;
+                }
+
+                if (subCommand.getArguments().size() > index) {
+                    CommandArgument argument = subCommand.getArguments().get(index);
+
+                    tabs.addAll(getArgumentTabs(argument));
+                }
+            }
+        }
+
+        return tabs;
+    }
+
+    private List<String> getArgumentTabs(CommandArgument argument) {
+        List<String> tabs = new ArrayList<>();
+
+        if (argument.getType() == Player.class) {
+            tabs.addAll(getPlugin().getServer().getOnlinePlayers().stream().map(Player::getName).toList());
+        } else if (argument.getType() == Boolean.class) {
+            tabs.addAll(List.of("true", "false"));
+        } else {
+            String arg = (argument.isRequired() ? "<" : "[") + argument.getName() + (argument.isRequired() ? ">" : "]");
+            tabs.add(arg);
         }
 
         return tabs;

@@ -1,6 +1,7 @@
 package ru.sscefalix.sEngineX;
 
 import lombok.Getter;
+import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitScheduler;
 import org.bukkit.scheduler.BukkitTask;
@@ -66,6 +67,10 @@ public abstract class SEngine<P extends SEngine<P>> extends JavaPlugin {
         if (listenerManager != null) {
             listenerManager.shutdown();
         }
+    }
+
+    public @NotNull PluginManager getPluginManager() {
+        return getServer().getPluginManager();
     }
 
     public @NotNull BukkitScheduler getScheduler() {
