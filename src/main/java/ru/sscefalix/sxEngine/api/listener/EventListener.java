@@ -1,4 +1,4 @@
-package ru.sscefalix.sEngineX.api.listener;
+package ru.sscefalix.sxEngine.api.listener;
 
 import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;

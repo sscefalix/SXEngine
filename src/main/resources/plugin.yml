@@ -1,6 +1,6 @@
-name: SEngineX
+name: SXEngine
 version: ${project.version}
-main: ru.sscefalix.sEngineX.SEngineX
+main: ru.sscefalix.sxEngine.SXEnginePlugin
 api-version: '1.21'
 authors: [ sscefalix ]
 website: sscefalix.ru

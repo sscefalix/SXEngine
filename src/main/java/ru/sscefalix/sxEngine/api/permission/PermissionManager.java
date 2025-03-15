@@ -1,17 +1,17 @@
-package ru.sscefalix.sEngineX.api.permission;
+package ru.sscefalix.sxEngine.api.permission;
 
 import org.bukkit.permissions.Permission;
 import org.jetbrains.annotations.NotNull;
-import ru.sscefalix.sEngineX.SEngine;
-import ru.sscefalix.sEngineX.api.command.AbstractCommand;
-import ru.sscefalix.sEngineX.api.command.AbstractMainCommand;
-import ru.sscefalix.sEngineX.api.command.AbstractSubCommand;
-import ru.sscefalix.sEngineX.api.manager.AbstractManager;
+import ru.sscefalix.sxEngine.SXEngine;
+import ru.sscefalix.sxEngine.api.command.AbstractCommand;
+import ru.sscefalix.sxEngine.api.command.AbstractMainCommand;
+import ru.sscefalix.sxEngine.api.command.AbstractSubCommand;
+import ru.sscefalix.sxEngine.api.manager.AbstractManager;
 
 import java.util.HashSet;
 import java.util.Set;
 
-public class PermissionManager<P extends SEngine<P>> extends AbstractManager<P> {
+public class PermissionManager<P extends SXEngine<P>> extends AbstractManager<P> {
     private final Set<String> registeredPermissions;
 
     public PermissionManager(P plugin) {

@@ -1,4 +1,4 @@
-package ru.sscefalix.sEngineX.api.command;
+package ru.sscefalix.sxEngine.api.command;
 
 import lombok.Getter;
 import lombok.Setter;

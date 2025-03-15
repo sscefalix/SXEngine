@@ -5,11 +5,11 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>ru.sscefalix</groupId>
-    <artifactId>senginex</artifactId>
-    <version>1.2.2.19</version>
+    <artifactId>sxengine</artifactId>
+    <version>1.2.2.21</version>
     <packaging>jar</packaging>
 
-    <name>SEngineX</name>
+    <name>SXEngine</name>
 
     <properties>
         <java.version>21</java.version>
@@ -19,8 +19,8 @@
     <distributionManagement>
         <repository>
             <id>github</id>
-            <name>GitHub OWNER Apache Maven Packages</name>
-            <url>https://maven.pkg.github.com/sscefalix/senginex</url>
+            <name>GitHub SSCEFALIX Apache Maven Packages</name>
+            <url>https://maven.pkg.github.com/sscefalix/SXEngine</url>
         </repository>
     </distributionManagement>
 

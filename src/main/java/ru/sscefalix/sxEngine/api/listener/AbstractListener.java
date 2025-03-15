@@ -1,11 +1,11 @@
-package ru.sscefalix.sEngineX.api.listener;
+package ru.sscefalix.sxEngine.api.listener;
 
 import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
-import ru.sscefalix.sEngineX.SEngine;
+import ru.sscefalix.sxEngine.SXEngine;
 
 @Getter
-public class AbstractListener<P extends SEngine<P>> implements EventListener {
+public class AbstractListener<P extends SXEngine<P>> implements EventListener {
     @NotNull
     private final P plugin;
 

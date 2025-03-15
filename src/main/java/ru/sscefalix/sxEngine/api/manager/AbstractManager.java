@@ -1,13 +1,13 @@
-package ru.sscefalix.sEngineX.api.manager;
+package ru.sscefalix.sxEngine.api.manager;
 
 import lombok.Getter;
-import ru.sscefalix.sEngineX.SEngine;
-import ru.sscefalix.sEngineX.api.listener.EventListener;
+import ru.sscefalix.sxEngine.SXEngine;
+import ru.sscefalix.sxEngine.api.listener.EventListener;
 
 import java.util.HashSet;
 import java.util.Set;
 
-public abstract class AbstractManager<P extends SEngine<P>> {
+public abstract class AbstractManager<P extends SXEngine<P>> {
     @Getter
     private final P plugin;
 

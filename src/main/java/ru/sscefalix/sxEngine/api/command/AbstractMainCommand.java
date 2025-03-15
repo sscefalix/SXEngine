@@ -1,4 +1,4 @@
-package ru.sscefalix.sEngineX.api.command;
+package ru.sscefalix.sxEngine.api.command;
 
 import lombok.Getter;
 import org.bukkit.command.Command;
@@ -8,15 +8,15 @@ import org.bukkit.command.TabCompleter;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import ru.sscefalix.sEngineX.SEngine;
-import ru.sscefalix.sEngineX.api.utils.ColorUtils;
+import ru.sscefalix.sxEngine.SXEngine;
+import ru.sscefalix.sxEngine.api.utils.ColorUtils;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
 @Getter
-public abstract class AbstractMainCommand<P extends SEngine<P>> extends AbstractCommand<P> implements CommandExecutor, TabCompleter {
+public abstract class AbstractMainCommand<P extends SXEngine<P>> extends AbstractCommand<P> implements CommandExecutor, TabCompleter {
     private final List<AbstractSubCommand<P>> subCommands;
     private final List<String> aliases;
 
@@ -122,31 +122,36 @@ public abstract class AbstractMainCommand<P extends SEngine<P>> extends Abstract
     }
 
     @Override
-    public @Nullable List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command cmd, @NotNull String label, @NotNull String @NotNull [] args) {
+    public @Nullable List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command cmd, @NotNull String label, @NotNull String[] args) {
         List<String> tabs = new ArrayList<>();
 
         if (subCommands.isEmpty()) {
-            int index = args.length - 1;
-
-            CommandArgument argument = getArguments().get(index);
-
-            tabs.addAll(getArgumentTabs(argument));
+            if (args.length > 0 && !args[0].isEmpty()) {
+                int index = args.length - 1;
+                List<CommandArgument> arguments = getArguments();
+                if (index < arguments.size()) {
+                    CommandArgument argument = arguments.get(index);
+                    tabs.addAll(getArgumentTabs(argument));
+                }
+            }
         } else {
             if (args.length == 1) {
-                tabs.addAll(filterAndSort(subCommands.stream().filter(command -> sender.hasPermission(command.getPermission())).map(AbstractSubCommand::getName).toList(), label));
+                tabs.addAll(filterAndSort(
+                        subCommands.stream()
+                                .filter(command -> sender.hasPermission(command.getPermission()))
+                                .map(AbstractSubCommand::getName)
+                                .toList(),
+                        args[0]
+                ));
             } else if (args.length > 1) {
-                int index = args.length - 2;
-
                 AbstractSubCommand<P> subCommand = findSubCommand(args[0]);
-
-                if (subCommand == null) {
-                    return tabs;
-                }
-
-                if (subCommand.getArguments().size() > index) {
-                    CommandArgument argument = subCommand.getArguments().get(index);
-
-                    tabs.addAll(getArgumentTabs(argument));
+                if (subCommand != null) {
+                    int index = args.length - 2;
+                    List<CommandArgument> subArgs = subCommand.getArguments();
+                    if (index < subArgs.size()) {
+                        CommandArgument argument = subArgs.get(index);
+                        tabs.addAll(getArgumentTabs(argument));
+                    }
                 }
             }
         }

@@ -1,14 +1,14 @@
-package ru.sscefalix.sEngineX.api.listener;
+package ru.sscefalix.sxEngine.api.listener;
 
 import lombok.Getter;
-import ru.sscefalix.sEngineX.SEngine;
-import ru.sscefalix.sEngineX.api.manager.AbstractManager;
+import ru.sscefalix.sxEngine.SXEngine;
+import ru.sscefalix.sxEngine.api.manager.AbstractManager;
 
 import java.util.ArrayList;
 import java.util.List;
 
 @Getter
-public class ListenerManager<P extends SEngine<P>> extends AbstractManager<P> {
+public class ListenerManager<P extends SXEngine<P>> extends AbstractManager<P> {
     private final List<AbstractListener<P>> listeners;
 
     public ListenerManager(P plugin) {

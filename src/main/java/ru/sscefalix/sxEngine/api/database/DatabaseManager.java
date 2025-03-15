@@ -1,10 +1,10 @@
-package ru.sscefalix.sEngineX.api.database;
+package ru.sscefalix.sxEngine.api.database;
 
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import org.jspecify.annotations.Nullable;
-import ru.sscefalix.sEngineX.SEngine;
-import ru.sscefalix.sEngineX.api.manager.AbstractManager;
+import ru.sscefalix.sxEngine.SXEngine;
+import ru.sscefalix.sxEngine.api.manager.AbstractManager;
 
 import java.lang.reflect.Field;
 import java.sql.*;
@@ -13,7 +13,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
-public class DatabaseManager<P extends SEngine<P>> extends AbstractManager<P> {
+public class DatabaseManager<P extends SXEngine<P>> extends AbstractManager<P> {
     private HikariDataSource dataSource;
 
     private String host;

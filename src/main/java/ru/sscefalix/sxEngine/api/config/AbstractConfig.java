@@ -1,7 +1,7 @@
-package ru.sscefalix.sEngineX.api.config;
+package ru.sscefalix.sxEngine.api.config;
 
 import org.bukkit.configuration.file.YamlConfiguration;
-import ru.sscefalix.sEngineX.SEngine;
+import ru.sscefalix.sxEngine.SXEngine;
 
 import java.io.File;
 import java.io.IOException;
@@ -9,7 +9,7 @@ import java.lang.reflect.Field;
 import java.util.Arrays;
 import java.util.List;
 
-public abstract class AbstractConfig<P extends SEngine<P>> {
+public abstract class AbstractConfig<P extends SXEngine<P>> {
     protected final P plugin;
     protected final String fileName;
     protected File configFile;

@@ -1,17 +1,17 @@
-package ru.sscefalix.sEngineX.api.command;
+package ru.sscefalix.sxEngine.api.command;
 
 import lombok.Getter;
 import lombok.Setter;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
-import ru.sscefalix.sEngineX.SEngine;
-import ru.sscefalix.sEngineX.api.utils.ColorUtils;
+import ru.sscefalix.sxEngine.SXEngine;
+import ru.sscefalix.sxEngine.api.utils.ColorUtils;
 
 import java.util.ArrayList;
 import java.util.List;
 
 @Getter
-public abstract class AbstractCommand<P extends SEngine<P>> {
+public abstract class AbstractCommand<P extends SXEngine<P>> {
     @Setter
     private P plugin;
 

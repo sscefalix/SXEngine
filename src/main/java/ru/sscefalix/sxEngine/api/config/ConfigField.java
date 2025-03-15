@@ -1,4 +1,4 @@
-package ru.sscefalix.sEngineX.api.config;
+package ru.sscefalix.sxEngine.api.config;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

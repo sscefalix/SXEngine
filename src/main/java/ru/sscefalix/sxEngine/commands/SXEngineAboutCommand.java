@@ -1,16 +1,16 @@
-package ru.sscefalix.sEngineX.commands;
+package ru.sscefalix.sxEngine.commands;
 
 import org.bukkit.command.CommandSender;
-import ru.sscefalix.sEngineX.SEngine;
-import ru.sscefalix.sEngineX.api.command.AbstractSubCommand;
-import ru.sscefalix.sEngineX.api.command.CommandArgument;
-import ru.sscefalix.sEngineX.api.utils.ColorUtils;
+import ru.sscefalix.sxEngine.SXEngine;
+import ru.sscefalix.sxEngine.api.command.AbstractSubCommand;
+import ru.sscefalix.sxEngine.api.command.CommandArgument;
+import ru.sscefalix.sxEngine.api.utils.ColorUtils;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class SEngineXAboutCommand<P extends SEngine<P>> extends AbstractSubCommand<P> {
-    public SEngineXAboutCommand(P plugin) {
+public class SXEngineAboutCommand<P extends SXEngine<P>> extends AbstractSubCommand<P> {
+    public SXEngineAboutCommand(P plugin) {
         super("about", "Команда для получения информации о плагине.", new ArrayList<>());
         setPlugin(plugin);
     }

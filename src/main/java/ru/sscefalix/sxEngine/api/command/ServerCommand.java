@@ -1,15 +1,15 @@
-package ru.sscefalix.sEngineX.api.command;
+package ru.sscefalix.sxEngine.api.command;
 
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabCompleter;
 import org.jetbrains.annotations.NotNull;
-import ru.sscefalix.sEngineX.SEngine;
+import ru.sscefalix.sxEngine.SXEngine;
 
 import java.util.List;
 
-public class ServerCommand<P extends SEngine<P>> extends Command {
+public class ServerCommand<P extends SXEngine<P>> extends Command {
     private final CommandExecutor executor;
     private final TabCompleter tabCompleter;
 
