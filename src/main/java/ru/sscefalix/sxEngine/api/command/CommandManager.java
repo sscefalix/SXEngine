@@ -3,6 +3,8 @@ package ru.sscefalix.sxEngine.api.command;
 import lombok.Getter;
 import org.bukkit.command.Command;
 import ru.sscefalix.sxEngine.SXEngine;
+import ru.sscefalix.sxEngine.api.command.abc.AbstractMainCommand;
+import ru.sscefalix.sxEngine.api.command.server.ServerCommand;
 import ru.sscefalix.sxEngine.api.manager.AbstractManager;
 
 import java.util.ArrayList;

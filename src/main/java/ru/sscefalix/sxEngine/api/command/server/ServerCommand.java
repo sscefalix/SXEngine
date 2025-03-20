@@ -1,4 +1,4 @@
-package ru.sscefalix.sxEngine.api.command;
+package ru.sscefalix.sxEngine.api.command.server;
 
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -6,6 +6,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabCompleter;
 import org.jetbrains.annotations.NotNull;
 import ru.sscefalix.sxEngine.SXEngine;
+import ru.sscefalix.sxEngine.api.command.abc.AbstractMainCommand;
 
 import java.util.List;
 
@@ -13,7 +14,7 @@ public class ServerCommand<P extends SXEngine<P>> extends Command {
     private final CommandExecutor executor;
     private final TabCompleter tabCompleter;
 
-    protected ServerCommand(AbstractMainCommand<P> command) {
+    public ServerCommand(AbstractMainCommand<P> command) {
         super(command.getName());
         this.executor = command;
         this.tabCompleter = command;

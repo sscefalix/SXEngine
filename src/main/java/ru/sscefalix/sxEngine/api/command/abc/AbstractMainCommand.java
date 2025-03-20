@@ -1,4 +1,4 @@
-package ru.sscefalix.sxEngine.api.command;
+package ru.sscefalix.sxEngine.api.command.abc;
 
 import lombok.Getter;
 import org.bukkit.command.Command;
@@ -9,11 +9,13 @@ import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import ru.sscefalix.sxEngine.SXEngine;
+import ru.sscefalix.sxEngine.api.command.argument.CommandArgument;
 import ru.sscefalix.sxEngine.api.utils.ColorUtils;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Getter
 public abstract class AbstractMainCommand<P extends SXEngine<P>> extends AbstractCommand<P> implements CommandExecutor, TabCompleter {
@@ -48,22 +50,24 @@ public abstract class AbstractMainCommand<P extends SXEngine<P>> extends Abstrac
         }
 
         try {
-            List<String> argsToProcess;
+            List<String> argsToProcess = new ArrayList<>();
 
             if (command instanceof AbstractSubCommand) {
-                argsToProcess = args.subList(1, args.size());
+                argsToProcess.addAll(args.subList(1, args.size()));
             } else {
-                argsToProcess = args;
+                argsToProcess.addAll(args);
             }
 
             List<CommandArgument> arguments = command.validateAndParseArguments(argsToProcess);
 
             command.onExecute(sender, arguments);
+
+            arguments.clear();
+            argsToProcess.clear();
         } catch (Exception e) {
             sender.sendMessage(ColorUtils.colorize("&c" + e.getMessage()));
             command.sendUsageMessage(sender);
         }
-
         return true;
     }
 
@@ -95,34 +99,8 @@ public abstract class AbstractMainCommand<P extends SXEngine<P>> extends Abstrac
         return executeCommand(command, sender, Arrays.asList(args));
     }
 
-    public static List<String> filterAndSort(List<String> items, String input) {
-        List<String> filteredList = new ArrayList<>(items);
-
-        filteredList.sort((o1, o2) -> {
-            int prefixLength1 = getCommonPrefixLength(o1, input);
-            int prefixLength2 = getCommonPrefixLength(o2, input);
-
-            if (prefixLength1 != prefixLength2) {
-                return Integer.compare(prefixLength2, prefixLength1);
-            }
-            return 0;
-        });
-
-        return filteredList;
-    }
-
-    private static int getCommonPrefixLength(String str, String prefix) {
-        int length = Math.min(str.length(), prefix.length());
-        for (int i = 0; i < length; i++) {
-            if (str.charAt(i) != prefix.charAt(i)) {
-                return i;
-            }
-        }
-        return length;
-    }
-
     @Override
-    public @Nullable List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command cmd, @NotNull String label, @NotNull String[] args) {
+    public @Nullable List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command cmd, @NotNull String label, @NotNull String @NotNull [] args) {
         List<String> tabs = new ArrayList<>();
 
         if (subCommands.isEmpty()) {
@@ -131,7 +109,11 @@ public abstract class AbstractMainCommand<P extends SXEngine<P>> extends Abstrac
                 List<CommandArgument> arguments = getArguments();
                 if (index < arguments.size()) {
                     CommandArgument argument = arguments.get(index);
-                    tabs.addAll(getArgumentTabs(argument));
+                    tabs.addAll(filterAndSort(getArgumentTabs(argument), args[index]));
+                }
+            } else {
+                if (!getArguments().isEmpty()) {
+                    tabs.addAll(filterAndSort(getArgumentTabs(getArguments().getFirst()), args[0]));
                 }
             }
         } else {
@@ -150,7 +132,7 @@ public abstract class AbstractMainCommand<P extends SXEngine<P>> extends Abstrac
                     List<CommandArgument> subArgs = subCommand.getArguments();
                     if (index < subArgs.size()) {
                         CommandArgument argument = subArgs.get(index);
-                        tabs.addAll(getArgumentTabs(argument));
+                        tabs.addAll(filterAndSort(getArgumentTabs(argument), args[index + 1]));
                     }
                 }
             }
@@ -159,15 +141,32 @@ public abstract class AbstractMainCommand<P extends SXEngine<P>> extends Abstrac
         return tabs;
     }
 
+    private List<String> filterAndSort(List<String> input, String filter) {
+        if (filter == null || filter.isEmpty()) {
+            return input.stream()
+                    .sorted(String.CASE_INSENSITIVE_ORDER)
+                    .collect(Collectors.toList());
+        }
+
+        return input.stream()
+                .filter(str -> str.toLowerCase().startsWith(filter.toLowerCase()))
+                .sorted(String.CASE_INSENSITIVE_ORDER)
+                .collect(Collectors.toList());
+    }
+
     private List<String> getArgumentTabs(CommandArgument argument) {
         List<String> tabs = new ArrayList<>();
 
         if (argument.getType() == Player.class) {
-            tabs.addAll(getPlugin().getServer().getOnlinePlayers().stream().map(Player::getName).toList());
+            tabs.addAll(getPlugin().getServer().getOnlinePlayers().stream()
+                    .map(Player::getName)
+                    .toList());
         } else if (argument.getType() == Boolean.class) {
             tabs.addAll(List.of("true", "false"));
         } else {
-            String arg = (argument.isRequired() ? "<" : "[") + argument.getName() + (argument.isRequired() ? ">" : "]");
+            String arg = (argument.isRequired() ? "<" : "[") +
+                    argument.getName() +
+                    (argument.isRequired() ? ">" : "]");
             tabs.add(arg);
         }
 

@@ -2,6 +2,7 @@ package ru.sscefalix.sxEngine.api.database;
 
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
+import lombok.Getter;
 import org.jspecify.annotations.Nullable;
 import ru.sscefalix.sxEngine.SXEngine;
 import ru.sscefalix.sxEngine.api.manager.AbstractManager;
@@ -22,12 +23,91 @@ public class DatabaseManager<P extends SXEngine<P>> extends AbstractManager<P> {
     private String user;
     private String password;
 
+    @Getter
+    private boolean loaded = false;
+
     public DatabaseManager(P plugin) {
         super(plugin);
     }
 
     public Connection getConnection() throws SQLException {
+        if (!loaded) {
+            throw new SQLException("Database manager is not initialized.");
+        }
         return dataSource.getConnection();
+    }
+
+    /**
+     * Сохраняет или обновляет сущность в базе данных.
+     * Если у сущности есть автоинкрементное поле (id), выполняется INSERT или UPDATE в зависимости от наличия id.
+     */
+    public <T extends AbstractTable<P>> void save(Class<T> clazz, T entity) throws SQLException {
+        Field[] fields = clazz.getDeclaredFields();
+        Field idField = null;
+        Object idValue = null;
+
+        for (Field field : fields) {
+            TableColumn column = field.getAnnotation(TableColumn.class);
+            if (column != null && column.autoIncrement()) {
+                field.setAccessible(true);
+                idField = field;
+                try {
+                    idValue = field.get(entity);
+                } catch (IllegalAccessException e) {
+                    throw new SQLException("Failed to access id field", e);
+                }
+                break;
+            }
+        }
+
+        if (idValue == null || ((Number) idValue).longValue() == 0) {
+            insert(entity);
+        } else {
+            List<String> setClauses = new ArrayList<>();
+            List<Object> values = new ArrayList<>();
+
+            for (Field field : fields) {
+                TableColumn column = field.getAnnotation(TableColumn.class);
+                if (column != null && !column.autoIncrement()) {
+                    field.setAccessible(true);
+                    try {
+                        Object value = field.get(entity);
+                        setClauses.add(column.name() + " = ?");
+                        values.add(value);
+                    } catch (IllegalAccessException e) {
+                        throw new SQLException("Failed to access field value", e);
+                    }
+                }
+            }
+
+            String idColumnName = idField.getAnnotation(TableColumn.class).name();
+            String sql = String.format("UPDATE %s SET %s WHERE %s = ?",
+                    entity.getTableName(),
+                    String.join(", ", setClauses),
+                    idColumnName
+            );
+
+            try (Connection conn = getConnection();
+                 PreparedStatement stmt = conn.prepareStatement(sql)) {
+                for (int i = 0; i < values.size(); i++) {
+                    stmt.setObject(i + 1, values.get(i));
+                }
+                stmt.setObject(values.size() + 1, idValue);
+                stmt.executeUpdate();
+            }
+        }
+    }
+
+    /**
+     * Удаляет записи из таблицы по значению указанного поля.
+     */
+    public <T extends AbstractTable<P>> void deleteByField(Class<T> clazz, String field, Object value) throws SQLException {
+        String sql = String.format("DELETE FROM %s WHERE %s = ?", getTableName(clazz), field);
+        try (Connection conn = getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setObject(1, value);
+            stmt.executeUpdate();
+        }
     }
 
     public <T extends AbstractTable<P>> T insert(T entity) throws SQLException {
@@ -120,23 +200,22 @@ public class DatabaseManager<P extends SXEngine<P>> extends AbstractManager<P> {
 
     public <T extends AbstractTable<P>> @Nullable T getOneByField(Class<T> clazz, String field, Object value) throws SQLException {
         List<T> list = getByField(clazz, field, value);
-
         return list.isEmpty() ? null : list.getFirst();
     }
 
     public ResultSet executeSql(String sql, Object... params) throws SQLException {
-        Connection conn = getConnection();
-        PreparedStatement stmt = conn.prepareStatement(sql);
+        try (Connection conn = getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            for (int i = 0; i < params.length; i++) {
+                stmt.setObject(i + 1, params[i]);
+            }
 
-        for (int i = 0; i < params.length; i++) {
-            stmt.setObject(i + 1, params[i]);
-        }
-
-        if (sql.trim().toUpperCase().startsWith("SELECT")) {
-            return stmt.executeQuery();
-        } else {
-            stmt.executeUpdate();
-            return null;
+            if (sql.trim().toUpperCase().startsWith("SELECT")) {
+                return stmt.executeQuery();
+            } else {
+                stmt.executeUpdate();
+                return null;
+            }
         }
     }
 
@@ -191,12 +270,16 @@ public class DatabaseManager<P extends SXEngine<P>> extends AbstractManager<P> {
         }
     }
 
-    public <T extends AbstractTable<P>> T mapResultSetToObject(ResultSet rs, Class<T> clazz)
-            throws SQLException {
+    public <T extends AbstractTable<P>> T mapResultSetToObject(ResultSet rs, Class<T> clazz) throws SQLException {
         try {
-            T instance = clazz.getDeclaredConstructor().newInstance();
-            Field[] fields = clazz.getDeclaredFields();
+            T instance;
+            try {
+                instance = clazz.getDeclaredConstructor(getPlugin().getClass()).newInstance(getPlugin());
+            } catch (NoSuchMethodException e) {
+                instance = clazz.getDeclaredConstructor().newInstance();
+            }
 
+            Field[] fields = clazz.getDeclaredFields();
             for (Field field : fields) {
                 field.setAccessible(true);
                 TableColumn column = field.getAnnotation(TableColumn.class);
@@ -214,15 +297,19 @@ public class DatabaseManager<P extends SXEngine<P>> extends AbstractManager<P> {
             }
             return instance;
         } catch (Exception e) {
-            throw new SQLException("Failed to map ResultSet to object: " + e.getMessage());
+            throw new SQLException("Failed to map ResultSet to object: " + e.getMessage(), e);
         }
     }
 
-    private <T extends AbstractTable<P>> String getTableName(Class<T> clazz) {
+    public <T extends AbstractTable<P>> String getTableName(Class<T> clazz) {
         try {
-            return clazz.getDeclaredConstructor().newInstance().getTableName();
+            try {
+                return clazz.getDeclaredConstructor(getPlugin().getClass()).newInstance(getPlugin()).getTableName();
+            } catch (NoSuchMethodException e) {
+                return clazz.getDeclaredConstructor().newInstance().getTableName();
+            }
         } catch (Exception e) {
-            throw new RuntimeException("Failed to get table name", e);
+            throw new RuntimeException("Failed to get table name for class: " + clazz.getName(), e);
         }
     }
 
@@ -233,10 +320,10 @@ public class DatabaseManager<P extends SXEngine<P>> extends AbstractManager<P> {
             return "VARCHAR(255)";
         } else if (type == Integer.class || type == int.class) {
             return "INT";
-        } else if (type == Date.class
-                || type == Timestamp.class
-                || type == LocalDateTime.class) {
+        } else if (type == Date.class || type == Timestamp.class || type == LocalDateTime.class) {
             return "TIMESTAMP";
+        } else if (type == Boolean.class || type == boolean.class) {
+            return "BOOLEAN";
         }
         return "TEXT";
     }
@@ -257,6 +344,10 @@ public class DatabaseManager<P extends SXEngine<P>> extends AbstractManager<P> {
 
     @Override
     protected void onSetup() {
+        if (host == null || database == null || user == null || password == null) {
+            throw new IllegalStateException("Database configuration is not set.");
+        }
+
         HikariConfig config = new HikariConfig();
         config.setJdbcUrl(String.format("jdbc:mysql://%s:%d/%s", host, port, database));
         config.setUsername(user);
@@ -268,6 +359,7 @@ public class DatabaseManager<P extends SXEngine<P>> extends AbstractManager<P> {
         config.setMaxLifetime(1800000);
 
         this.dataSource = new HikariDataSource(config);
+        this.loaded = true;
     }
 
     @Override

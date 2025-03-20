@@ -2,8 +2,8 @@ package ru.sscefalix.sxEngine.commands;
 
 import org.bukkit.command.CommandSender;
 import ru.sscefalix.sxEngine.SXEngine;
-import ru.sscefalix.sxEngine.api.command.AbstractMainCommand;
-import ru.sscefalix.sxEngine.api.command.CommandArgument;
+import ru.sscefalix.sxEngine.api.command.abc.AbstractMainCommand;
+import ru.sscefalix.sxEngine.api.command.argument.CommandArgument;
 
 import java.util.ArrayList;
 import java.util.List;

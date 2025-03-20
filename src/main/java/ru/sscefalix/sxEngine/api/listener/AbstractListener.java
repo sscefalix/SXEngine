@@ -6,8 +6,7 @@ import ru.sscefalix.sxEngine.SXEngine;
 
 @Getter
 public class AbstractListener<P extends SXEngine<P>> implements EventListener {
-    @NotNull
-    private final P plugin;
+    private final @NotNull P plugin;
 
     public AbstractListener(@NotNull P plugin) {
         this.plugin = plugin;

@@ -1,10 +1,11 @@
-package ru.sscefalix.sxEngine.api.command;
+package ru.sscefalix.sxEngine.api.command.abc;
 
 import lombok.Getter;
 import lombok.Setter;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import ru.sscefalix.sxEngine.SXEngine;
+import ru.sscefalix.sxEngine.api.command.argument.CommandArgument;
 import ru.sscefalix.sxEngine.api.utils.ColorUtils;
 
 import java.util.ArrayList;

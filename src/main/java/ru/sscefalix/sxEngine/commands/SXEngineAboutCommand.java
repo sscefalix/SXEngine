@@ -2,8 +2,8 @@ package ru.sscefalix.sxEngine.commands;
 
 import org.bukkit.command.CommandSender;
 import ru.sscefalix.sxEngine.SXEngine;
-import ru.sscefalix.sxEngine.api.command.AbstractSubCommand;
-import ru.sscefalix.sxEngine.api.command.CommandArgument;
+import ru.sscefalix.sxEngine.api.command.abc.AbstractSubCommand;
+import ru.sscefalix.sxEngine.api.command.argument.CommandArgument;
 import ru.sscefalix.sxEngine.api.utils.ColorUtils;
 
 import java.util.ArrayList;

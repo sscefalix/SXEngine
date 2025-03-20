@@ -6,7 +6,7 @@
 
     <groupId>ru.sscefalix</groupId>
     <artifactId>sxengine</artifactId>
-    <version>1.2.2.21</version>
+    <version>1.2.4.1</version>
     <packaging>jar</packaging>
 
     <name>SXEngine</name>
