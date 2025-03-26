@@ -101,12 +101,15 @@ public class DatabaseManager<P extends SXEngine<P>> extends AbstractManager<P> {
     /**
      * Удаляет записи из таблицы по значению указанного поля.
      */
-    public <T extends AbstractTable<P>> void deleteByField(Class<T> clazz, String field, Object value) throws SQLException {
+    public <T extends AbstractTable<P>> void deleteByField(Class<T> clazz, String field, Object value) {
         String sql = String.format("DELETE FROM %s WHERE %s = ?", getTableName(clazz), field);
+
         try (Connection conn = getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setObject(1, value);
             stmt.executeUpdate();
+        } catch (SQLException e) {
+            getPlugin().getSLF4JLogger().error("Failed to delete all data.", e);
         }
     }
 

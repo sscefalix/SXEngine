@@ -39,15 +39,23 @@ public abstract class SXEngine<P extends SXEngine<P>> extends JavaPlugin {
     protected abstract void disable();
 
     private void loadManagers() {
-        commandManager = new CommandManager<>(self());
+        if (commandManager == null) {
+            commandManager = new CommandManager<>(self());
+        }
         commandManager.setup();
 
-        permissionManager = new PermissionManager<>(self());
+        if (permissionManager == null) {
+            permissionManager = new PermissionManager<>(self());
+        }
         permissionManager.setup();
 
-        databaseManager = new DatabaseManager<>(self());
+        if (databaseManager == null) {
+            databaseManager = new DatabaseManager<>(self());
+        }
 
-        listenerManager = new ListenerManager<>(self());
+        if (listenerManager == null) {
+            listenerManager = new ListenerManager<>(self());
+        }
         listenerManager.setup();
     }
 

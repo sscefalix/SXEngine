@@ -1,6 +1,5 @@
 package ru.sscefalix.sxEngine.api.data.impl.database;
 
-import lombok.Getter;
 import ru.sscefalix.sxEngine.SXEngine;
 import ru.sscefalix.sxEngine.api.data.AbstractDataHolder;
 import ru.sscefalix.sxEngine.api.data.impl.database.cache.DatabaseDataCache;
@@ -10,6 +9,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
+
 
 public abstract class AbstractDatabaseDataHolder<P extends SXEngine<P>, T extends AbstractTable<P>> extends AbstractDataHolder<P> {
     private final Class<T> tableClass;
@@ -129,6 +129,7 @@ public abstract class AbstractDatabaseDataHolder<P extends SXEngine<P>, T extend
         try {
             getPlugin().getDatabaseManager().deleteByField(tableClass, keyName, key);
         } catch (Exception e) {
+            getPlugin().getSLF4JLogger().error("Failed to delete all data.", e);
             throw new RuntimeException("Failed to delete all data for key: " + key, e);
         }
     }

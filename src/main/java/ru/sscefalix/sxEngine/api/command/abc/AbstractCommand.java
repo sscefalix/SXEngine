@@ -79,6 +79,7 @@ public abstract class AbstractCommand<P extends SXEngine<P>> {
         List<CommandArgument> parsedArguments = new ArrayList<>();
         for (int i = 0; i < getArguments().size(); ++i) {
             CommandArgument argument = getArguments().get(i);
+            argument.setValue(null);
 
             boolean isLastArgument = i == getArguments().size() - 1;
             boolean isListType = argument.getType() == List.class;
