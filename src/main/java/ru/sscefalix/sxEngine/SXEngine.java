@@ -10,6 +10,7 @@ import ru.sscefalix.sxEngine.api.command.CommandManager;
 import ru.sscefalix.sxEngine.api.database.DatabaseManager;
 import ru.sscefalix.sxEngine.api.listener.ListenerManager;
 import ru.sscefalix.sxEngine.api.permission.PermissionManager;
+import ru.sscefalix.sxEngine.commands.plugin.PluginCommand;
 
 import java.util.function.Consumer;
 
@@ -23,12 +24,16 @@ public abstract class SXEngine<P extends SXEngine<P>> extends JavaPlugin {
     @Override
     public void onEnable() {
         loadManagers();
+
+        commandManager.setPluginCommand(new PluginCommand<>(self()));
+
         enable();
     }
 
     @Override
     public void onDisable() {
         unloadManagers();
+
         disable();
     }
 
@@ -83,6 +88,10 @@ public abstract class SXEngine<P extends SXEngine<P>> extends JavaPlugin {
 
     public @NotNull BukkitScheduler getScheduler() {
         return getServer().getScheduler();
+    }
+
+    public void cancelTask(int taskId) {
+        getScheduler().cancelTask(taskId);
     }
 
     public void runTask(Consumer<BukkitTask> task) {

@@ -40,7 +40,7 @@ public abstract class AbstractMainCommand<P extends SXEngine<P>> extends Abstrac
 
     protected boolean executeCommand(AbstractCommand<P> command, CommandSender sender, List<String> args) {
         if (command.isOnlyPlayers() && !(sender instanceof Player)) {
-            sender.sendMessage(ColorUtils.colorize("&cКоманда доступна только игрокам."));
+            sender.sendMessage(ColorUtils.colorize("<red>Команда доступна только игрокам."));
             return true;
         }
 
@@ -65,8 +65,7 @@ public abstract class AbstractMainCommand<P extends SXEngine<P>> extends Abstrac
             arguments.clear();
             argsToProcess.clear();
         } catch (Exception e) {
-            sender.sendMessage(ColorUtils.colorize("&c" + e.getMessage()));
-            command.sendUsageMessage(sender);
+            sender.sendMessage(ColorUtils.colorize("<red>" + e.getMessage()));
         }
         return true;
     }

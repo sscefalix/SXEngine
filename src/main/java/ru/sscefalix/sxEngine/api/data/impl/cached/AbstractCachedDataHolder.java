@@ -39,7 +39,7 @@ public abstract class AbstractCachedDataHolder<P extends SXEngine<P>, T> extends
     @Nullable
     public T get(String key) {
         List<T> entries = cache.get(key);
-        return (entries != null && !entries.isEmpty()) ? entries.get(0) : null;
+        return (entries != null && !entries.isEmpty()) ? entries.getFirst() : null;
     }
 
     /**

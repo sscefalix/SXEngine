@@ -1,5 +1,6 @@
 package ru.sscefalix.sxEngine.api.config;
 
+import lombok.Getter;
 import org.bukkit.configuration.file.YamlConfiguration;
 import ru.sscefalix.sxEngine.SXEngine;
 
@@ -12,6 +13,7 @@ import java.util.List;
 public abstract class AbstractConfig<P extends SXEngine<P>> {
     protected final P plugin;
     protected final String fileName;
+    @Getter
     protected File configFile;
     protected YamlConfiguration config;
 

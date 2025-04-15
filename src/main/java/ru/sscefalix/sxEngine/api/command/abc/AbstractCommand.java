@@ -34,7 +34,7 @@ public abstract class AbstractCommand<P extends SXEngine<P>> {
     }
 
     protected void sendPermissionMessage(CommandSender sender) {
-        sender.sendMessage(ColorUtils.colorize("&cУ вас недостаточно прав. &7({permission})".replace("{permission}", getPermission())));
+        sender.sendMessage(ColorUtils.colorize("<red>У вас недостаточно прав. <gray>({permission})".replace("{permission}", getPermission())));
     }
 
     protected void sendUsageMessage(CommandSender sender) {

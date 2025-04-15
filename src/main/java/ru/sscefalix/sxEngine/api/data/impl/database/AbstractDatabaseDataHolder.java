@@ -17,11 +17,11 @@ public abstract class AbstractDatabaseDataHolder<P extends SXEngine<P>, T extend
     private final String keyName;
 
     public AbstractDatabaseDataHolder(P plugin, Class<T> tableClass, String keyName) {
-        this(plugin, tableClass, keyName, 300_000, 20L * 60);
+        this(plugin, tableClass, keyName, 300_000, 20L * 300);
     }
 
     public AbstractDatabaseDataHolder(P plugin, Class<T> tableClass, String keyName, long cacheTtl) {
-        this(plugin, tableClass, keyName, cacheTtl, 20L * 60);
+        this(plugin, tableClass, keyName, cacheTtl, 20L * 300);
     }
 
     public AbstractDatabaseDataHolder(P plugin, Class<T> tableClass, String keyName, long cacheTtl, long cleanupInterval) {
